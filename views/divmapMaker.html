@@ -5,9 +5,12 @@
             <br><br>
             <img src="images/giphy.gif">
         </div>
-        <div id="divmap" ng-style="{width: mapWidth}">
+        <div id="divmap" ng-style="{width: mapWidth}" ng-mouseleave="setDragging(false)">
             <div ng-hide="rendering">
-                <div ng-repeat="cell in cellsArray track by $index" class="cell" ng-style="{'background-color': cell.background}" ng-click="cell.background = activeColor"></div>
+                <div ng-repeat="cell in cellsArray track by $index" class="cell" title={{cell.tooltip}} ng-class="cell.tooltip ? 'hasTooltip' : ''"
+                    ng-style="{'background-color': cell.background, 'background-image': 'url(' + cell.backgroundUrl + ')', 'background-size': gridSize + 'px', 'height': gridSize + 'px', 'width': gridSize + 'px'  }"
+                    ng-mousedown="cell.backgroundUrl = activeCustom; cell.background = activeColor; addingTooltip = true; tipId = $index; setDragging(true);" ng-mouseup="setDragging(false)"
+                    ng-mouseenter="mouseDragCheck(cell)"></div>
             </div>
         </div>
     </div>
@@ -17,24 +20,64 @@
         <h2>Select Map Size</h2>
         <div>
             <label for="height">Height</label><br>
-            <input type="number" name="height" ng-model="mapDivHeight" ng-change="createMap()">
+            <input type="number" name="height" ng-model="mapDivHeight" ng-change="createMap(true)">
         </div>
         <div>
             <label for="width">Width</label><br>
-            <input type="number" name="width" ng-model="mapDivWidth" ng-change="createMap()">
+            <input type="number" name="width" ng-model="mapDivWidth" ng-change="createMap(true)">
+        </div>
+        <br>
+        <div>
+            <label for="gridSize">Grid Size</label>
+            <select name="gridSize" ng-model="gridSize" ng-change="createMap(false)">
+                <option value="20">small</option>
+                <option value="30">medium</option>
+                <option value="40">large</option>                
+            </select>
         </div>
         <br>
         <hr>
         <div>
             <label for="map-name">Map Name</label><br>
-            <input type="number" name="map-name" ng-model="mapName">
+            <input type="text" name="map-name" ng-model="mapName">
         </div>
         <br>
-        <button class="w3-btn w3-indigo">Save</button>
+        <button class="w3-btn w3-indigo" ng-click="saveMap()" ng-hide="updatingMap">Save</button>
+        <button class="w3-btn w3-indigo" ng-click="saveMap(mapName)" ng-show="updatingMap">Update Map</button>        
+        <br>
+        <hr>
+        <h2>Or Edit a Map</h2>
+        <label for="saved-maps">Saved Maps</label><br>
+        <select name="saved-maps" id="" ng-options="map as map.name for map in savedMaps" ng-model="chosenMap" ng-change="createMap(false, chosenMap)"></select>
     </div>
     <div class="w3-col m8 l8">
         <h2>Tile Palette</h2>
         <span>Click the color or background you would like to apply</span><br>
-        <div ng-repeat="paintColor in paintColorsArray track by $index" class="paintColor" ng-style="{'background-color': paintColor.background}" ng-click="applyColor(paintColor.background)"></div>
+        <div ng-repeat="paintColor in paintColorsArray track by $index" class="paintColor" ng-style="{'background-color': paintColor.background}"
+            ng-click="applyColor(paintColor.background)"></div>
+        <hr>
+        <h2>Custom tiles</h2>
+        <div ng-repeat="customTile in customTiles track by $index" title={{customTile.name}} class="customTile" ng-style="{'background-image': 'url(' + customTile.backgroundUrl + ')', 'background-size': '30px'}"
+            ng-click="applyCustom(customTile.backgroundUrl)"></div>
+        <div class="customTile" ng-click="adding = !adding">+</div>
+        <br><br>
+        <button class="w3-btn w3-red" ng-click="activeCustom = undefined; activeColor = undefined">Clear Brush</button>
+        <br><br>
+        <div id="add-custom-tile" ng-show="adding">
+            <label for="newUrl">Enter Url for new Tile Image</label><br>
+            <label for="customTileName">Name</label><br>
+            <input type="text" name="customTileName" ng-model="customTileName"><br>
+            <label for="newUrl">Image Url</label><br>            
+            <input type="text" name="newUrl" ng-model="newUrl">
+            <button class="w3-btn w3-indigo" ng-click="adding = !adding; addCustom()">Add</button>
+            <button class="w3-btn w3-red" ng-click="adding = !adding">Cancel</button>
+        </div>
+        <div id="add-tooltip" ng-show="addingTooltip">
+            <hr>
+            <label for="newTip">Enter Tooltip for Cell {{tipId}}</label><br>
+            <textarea type="text" name="newTip" ng-model="cellsArray[tipId].tooltip">
+            <button class="w3-btn w3-indigo" ng-click="addingTooltip = !addingTooltip">Add</button>
+            <button class="w3-btn w3-red" ng-click="addingTooltip = !addingTooltip">Cancel</button>
+        </div>
     </div>
 </div>

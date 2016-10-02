@@ -10,11 +10,6 @@
                     url: '/',
                     templateUrl: '../views/home.html'
                 })
-                .state('gridmap', {
-                    url: '/gridmap',
-                    templateUrl: '../views/gridmap.html',
-                    controller: 'mapCtrl'
-                })
                 .state('divmap', {
                     url: '/divmap',
                     templateUrl: '../views/divmap.html',
@@ -24,6 +19,26 @@
                     url: '/divmapMaker',
                     templateUrl: '../views/divmapMaker.html',
                     controller: 'divmapMakerCtrl'
+                })
+                .state('campaignLobby', {
+                    url: '/campaignLobby/:campaignId',
+                    templateUrl: '../views/campaignLobby.html',
+                    controller: 'lobbyCtrl',
+                    resolve: {
+                        campaign: function(campaignService, $stateParams){
+                            return campaignService.getCampaign($stateParams.campaignId);
+                        }
+                    }
+                })
+                .state('lobbyBrowser', {
+                    url: '/lobbyBrowser',
+                    templateUrl: '../views/lobbyBrowser.html',
+                    controller: 'lobbyBrowserCtrl',
+                    resolve: {
+                        allCampaigns: function(campaignService){
+                            return campaignService.getAllCampaigns();
+                        }
+                    }
                 })
         });
 
