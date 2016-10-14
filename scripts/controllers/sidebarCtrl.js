@@ -2,7 +2,7 @@
     "use strict";
 
     angular.module('app')
-        .controller('sidebarCtrl', function ($scope, $firebaseAuth, $firebaseArray, $firebaseObject) {
+        .controller('sidebarCtrl', function ($scope, $firebaseAuth, $firebaseArray, $firebaseObject, campaignService, $interval) {
 
             var fbref = firebase.database().ref();
             $scope.hideMenu = false;
@@ -31,21 +31,18 @@
                 $scope.firebaseUser = null;
             }
 
-
             $scope.hideCard = function (property) {
                 $scope[property] = !$scope[property];
             }
 
-            /*
-            *functionality for dicebag
-            */
-            var recentRolls = [];
-            var button = document.getElementById('roll-button');
-            button.onclick = function (e) {
-                rollDice();
+            $scope.toggleSidebar = function () {
+                $scope.hideMenu = !$scope.hideMenu;
             }
+            
+            // Functionality for Dicebag
+            var recentRolls = [];
 
-            function rollDice() {
+            $scope.rollDice = function () {
                 var numberOfDice = document.getElementById('dice-number').value;
                 var typeOfDice = document.getElementById('dice-type').value;
                 var modifier = document.getElementById('dice-modifier').value || 0;
@@ -92,13 +89,36 @@
                 document.getElementById('recent-rolls').textContent = rollString;
             }
 
-            //crappy temp log book solution
+            // Crappy temp log book solution
             $scope.notePad = localStorage.getItem('notePad');
 
             $scope.saveNotePad = function () {
                 console.log('saving notes');
                 localStorage.setItem('notePad', $scope.notePad);
-            }
+            };
+
+            $scope.activeCampaign = null;
+
+            $scope.newPartyJournalNote = {};
+
+            $scope.addPartyJournalNote = function () {
+                console.log($scope.newPartyJournalNote);
+                if (!$scope.newPartyJournalNote.characterName || !$scope.newPartyJournalNote.text) {
+                    toastr.warning('Must have a Name and Note text', 'Hold up');
+                    return;
+                }
+                $scope.newPartyJournalNote.user = $scope.firebaseUser.user.displayName;
+                if ($scope.activeCampaign && !$scope.activeCampaign.partyJournal) {
+                    $scope.activeCampaign.partyJournal = [];
+                };
+                var time = new Date();
+                $scope.newPartyJournalNote.timeStamp = time.toLocaleDateString() + ' - ' + time.toLocaleTimeString();
+                $scope.activeCampaign.partyJournal.push($scope.newPartyJournalNote);
+
+                campaignService.saveCampaign($scope.activeCampaign);
+
+                $scope.newPartyJournalNote = {};
+            };
 
         });
 

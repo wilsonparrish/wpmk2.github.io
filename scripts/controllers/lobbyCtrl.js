@@ -10,6 +10,7 @@
 
             $scope.savedMaps = mapsService.getMaps();
             $scope.campaign = campaign;
+            $scope.$parent.activeCampaign = $scope.campaign;
             $scope.allCampaigns = campaignService.getAllCampaigns();
 
             $scope.renderMap = function () {
@@ -53,14 +54,11 @@
                 return returnMap;
             }
 
-
-
-            $scope.isUserDM = function () {
-                if ($scope.user.display === $scope.campaign.DM) {
-                    return true;
-                }
-                return false;
-            };
+            if ($scope.user.user.displayName === $scope.campaign.DM) {
+                $scope.isUserDM = true;
+            } else {
+                $scope.isUserDM =  false;
+            }
         })
 
 } ());
